@@ -213,7 +213,35 @@ To save time and prevent generating unwanted data during geometry verification, 
 
 ---
 
-## 9. CLI Arguments Reference
+## 9. Spatial WAV Analysis & Visualization Tool
+
+A dedicated analysis script is provided in `utils/visualize_wav.py` to inspect the generated spatial audio signals and evaluate the exact physical cues (ITD, ILD, and spectral notches) used by human ears (and ML models) for gunfire direction-of-arrival (DOA) estimation.
+
+### 9.1 Visual Analysis Layout (3x2 Subplots)
+1. **Waveforms (Left / Right)**: Display the raw time-domain signals (in milliseconds) for both ears to inspect relative onset delay and amplitude decay.
+2. **Spectrograms (Left / Right)**: Calculate the log-dB short-time Fourier transform (STFT) for each ear. This exposes the sound energy over time and frequency, making spectral notches (from the pinna reflection) and high-frequency roll-off (from the head shadow) visible.
+3. **Cross-Correlation (ITD Analysis)**: Computes the fast cross-correlation between left and right channels using FFT (`scipy.signal.correlate(..., method='fft')`).
+   - The lag window is masked to $\pm 1.2\text{ ms}$ (encompassing the maximum human head size).
+   - The red dashed line marks the peak correlation lag, showing the exact Interaural Time Difference (ITD) in milliseconds.
+4. **Interaural Level Difference (ILD)**: Plots the frequency-dependent level difference (Left minus Right PSD in dB) across the entire frequency range.
+
+### 9.2 Integrated Frequency Statistics
+To resolve front/back ambiguity (the "cone of confusion") and quantify acoustic coloring, the tool computes and overlays statistics boxes directly onto the top-right corner of their respective Spectrogram plots:
+* **Peak Frequency**: The frequency component containing the maximum spectral energy.
+* **Spectral Centroid**: The weighted average frequency of the spectrum, representing the brightness of the tone.
+* **High-Frequency (HF) Ratio ($>5\text{ kHz}$)**: The percentage of the signal's total energy that lies above $5\text{ kHz}$. A lower HF ratio in one ear indicates physical shadowing by the head or the pinna (indicating the source is located to the rear or opposite side).
+
+### 9.3 Usage & CLI Options
+```bash
+python3 ./utils/visualize_wav.py --input <path_to_wav> [options]
+```
+* `--input` / `-i`: Path to the target stereo WAV file.
+* `--output-plot` / `-o`: Output path for the analysis image (defaults to saving next to the WAV file as `*_analysis.png`).
+* `--no-show`: Skips opening the matplotlib GUI window and immediately saves the plot.
+
+---
+
+## 10. CLI Arguments Reference
 
 | Option | Type | Default | Description |
 | :--- | :---: | :---: | :--- |
