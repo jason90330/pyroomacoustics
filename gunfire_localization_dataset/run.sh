@@ -107,3 +107,5 @@ python3 ./generate_dataset.py \
 python3 ./generate_dataset.py --preset tunnel --distance 3.0 --visualize
 python3 ./generate_dataset.py --preset open_field --distance 3.0 --visualize
 python3 ./generate_dataset.py --preset open_field --distance 3.0 --visualize --obstacle
+
+python3 ./utils/visualize_wav.py --input ./output_open_field/gunshot_az_180.wav --no-show
