@@ -10,6 +10,8 @@ build/
 docs/_build
 dist/
 local_examples/
+gunfire_localization_dataset/output*
+gunfire_localization_dataset/__pycache__
 *.ipynb_checkpoints
 # files added after editable install (pip install -e . )
 pyroomacoustics.egg-info/
