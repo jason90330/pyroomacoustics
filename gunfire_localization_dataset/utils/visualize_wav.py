@@ -126,6 +126,43 @@ def analyze_and_plot(wav_path, output_plot=None, show_plot=True):
         axs[2, 1].set_ylabel("Level Difference (L - R) dB")
         axs[2, 1].grid(True, linestyle='--', alpha=0.6)
         axs[2, 1].set_xlim(0, fs / 2 / 1000)
+        
+        # Compute frequency statistics
+        def compute_freq_stats(signal, fs):
+            N = len(signal)
+            fft_vals = np.fft.rfft(signal)
+            fft_freqs = np.fft.rfftfreq(N, 1.0 / fs)
+            psd = np.abs(fft_vals)**2
+            
+            peak_idx = np.argmax(psd)
+            peak_freq = fft_freqs[peak_idx]
+            
+            sum_psd = np.sum(psd)
+            centroid = np.sum(fft_freqs * psd) / sum_psd if sum_psd > 0 else 0.0
+            
+            hf_mask = fft_freqs >= 5000.0
+            hf_energy = np.sum(psd[hf_mask])
+            hf_ratio = (hf_energy / sum_psd) * 100.0 if sum_psd > 0 else 0.0
+            
+            return peak_freq, centroid, hf_ratio
+            
+        peak_f_l, centroid_l, hf_ratio_l = compute_freq_stats(left, fs)
+        peak_f_r, centroid_r, hf_ratio_r = compute_freq_stats(right, fs)
+        
+        stats_text = (
+            f"Frequency Statistics:\n"
+            f"Left:\n"
+            f"  Peak: {peak_f_l/1000:.2f} kHz\n"
+            f"  Centroid: {centroid_l/1000:.2f} kHz\n"
+            f"  HF Ratio: {hf_ratio_l:.1f}%\n"
+            f"Right:\n"
+            f"  Peak: {peak_f_r/1000:.2f} kHz\n"
+            f"  Centroid: {centroid_r/1000:.2f} kHz\n"
+            f"  HF Ratio: {hf_ratio_r:.1f}%"
+        )
+        props = dict(boxstyle='round', facecolor='#fcfcfc', edgecolor='#cccccc', alpha=0.9)
+        axs[2, 1].text(0.97, 0.95, stats_text, transform=axs[2, 1].transAxes, fontsize=9,
+                       fontfamily='monospace', verticalalignment='top', horizontalalignment='right', bbox=props)
     else:
         # Placeholder for mono analysis
         axs[2, 0].text(0.5, 0.5, "ITD Analysis requires a Stereo file", 
